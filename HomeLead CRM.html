@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="HomeLead">
+<meta name="theme-color" content="#ffffff">
+<title>HomeLead CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#ffffff;--navy2:#f5f5f5;--navy3:#ebebeb;
+  --gold:#111111;--gold2:#333333;--gold3:#555555;
+  --cream:#f9f9f9;--cream2:#ffffff;--cream3:#e8e8e8;
+  --text:#111111;--text2:#555555;--text3:#999999;
+  --success:#2d6a4f;--success-bg:#d8f3dc;
+  --danger:#c1121f;--danger-bg:#fde8e9;
+  --warn:#9d6b1a;--warn-bg:#fdf3dc;
+  --border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.18);
+  --radius:10px;--radius-lg:16px;
+  --shadow:0 2px 12px rgba(0,0,0,0.07);
+  --font:'DM Sans',sans-serif;--font-serif:'DM Serif Display',serif;
+}
+
+html,body{height:100%;font-family:var(--font);background:var(--cream);color:var(--text);color-scheme:light}
+#app{display:flex;flex-direction:column;height:100%;max-width:960px;margin:0 auto}
+.screen{display:none;flex-direction:column;height:100%}
+.screen.active{display:flex}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--navy);flex-shrink:0;border-bottom:1px solid var(--border2)}
+.topbar-logo{width:34px;height:34px;background:#111111;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.topbar h1{font-family:var(--font-serif);font-size:18px;font-weight:400;flex:1;color:var(--gold);letter-spacing:.3px}
+.badge{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600;cursor:pointer;white-space:nowrap}
+.badge-danger{background:var(--danger-bg);color:var(--danger)}
+
+/* TABS */
+.tabs{display:flex;background:var(--navy2);flex-shrink:0;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:10px 16px;font-size:11px;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;letter-spacing:.4px;text-transform:uppercase;transition:color .15s}
+.tab.active{color:var(--text);border-bottom-color:var(--text)}
+
+/* CONTENT */
+.list-content{flex:1;overflow-y:auto;padding:14px 14px 80px;-webkit-overflow-scrolling:touch}
+
+/* ALERT */
+.alert-banner{display:flex;align-items:center;gap:10px;background:var(--danger-bg);border:1px solid rgba(193,18,31,0.2);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;font-size:13px}
+.alert-banner strong{color:var(--danger)}
+
+/* SEARCH */
+.search-bar{display:flex;gap:8px;margin-bottom:12px}
+.search-input{flex:1;padding:10px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--cream2);font-size:13px;color:var(--text);font-family:var(--font)}
+.search-input:focus{outline:none;border-color:var(--gold3)}
+.filter-sel{padding:10px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--cream2);font-size:12px;color:var(--text);font-family:var(--font)}
+
+/* LEAD CARD */
+.lead-card{background:var(--cream2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-bottom:10px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow)}
+.lead-card:hover{border-color:var(--gold3);transform:translateY(-1px)}
+.lead-card.overdue{border-left:4px solid var(--danger)}
+.lead-card.due-soon{border-left:4px solid var(--warn)}
+.lc-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+.lc-info{flex:1;min-width:0}
+.lc-name{font-family:var(--font-serif);font-size:16px;font-weight:400;line-height:1.2;margin-bottom:2px}
+.lc-addr{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc-mid{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.pill{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600;letter-spacing:.2px;display:inline-block}
+.p-hot{background:#fde8e9;color:#c1121f}.p-warm{background:#fdf3dc;color:#9d6b1a}
+.p-cold{background:var(--cream3);color:var(--text2)}.p-contacted{background:var(--success-bg);color:var(--success)}
+.p-gray{background:var(--cream3);color:var(--text2)}.p-overdue{background:#fde8e9;color:#c1121f}.p-soon{background:#fdf3dc;color:#9d6b1a}
+.lc-bot{display:flex;gap:8px}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;font-size:12px;cursor:pointer;color:var(--text);font-family:var(--font);font-weight:500;transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--cream3)}.btn:active{transform:scale(0.97)}
+.btn-gold{background:#111111;color:#ffffff;border-color:#111111}.btn-gold:hover{background:#333333}
+.btn-navy{background:#111111;color:#ffffff;border-color:#111111}
+.btn-sm{padding:6px 12px;font-size:11px}.btn-xs{padding:4px 10px;font-size:11px}
+.btn-danger{color:var(--danger);border-color:rgba(193,18,31,0.3)}.btn-danger:hover{background:var(--danger-bg)}
+
+.fab{position:fixed;bottom:24px;right:20px;width:52px;height:52px;border-radius:50%;background:#111111;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,0.2);font-size:24px;color:#ffffff;font-weight:700;z-index:50;transition:transform .15s}
+.fab:hover{transform:scale(1.08)}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+@media(max-width:480px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:var(--cream2);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+.stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px;font-weight:600}
+.stat-val{font-size:22px;font-weight:300;font-family:var(--font-serif)}
+
+/* DETAIL SCREEN */
+.detail-header{background:var(--navy);border-bottom:1px solid var(--border2);padding:14px 16px;flex-shrink:0}
+.detail-header-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.back-btn{width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,0.06);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text);transition:background .15s}
+.back-btn:hover{background:rgba(0,0,0,0.12)}
+.detail-name{font-family:var(--font-serif);font-size:20px;font-weight:400;color:var(--text);flex:1;line-height:1.2}
+.detail-body{flex:1;overflow-y:auto;padding:0 14px 80px;-webkit-overflow-scrolling:touch}
+
+/* SECTIONS */
+.deal-section{margin-top:16px}
+.section-heading{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.section-num{width:24px;height:24px;background:#111111;color:#ffffff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.section-title{font-family:var(--font-serif);font-size:15px;font-weight:400;letter-spacing:.3px}
+
+.field-card{background:var(--cream2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px}
+.field-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.field-row:last-child{border-bottom:none;padding-bottom:0}
+.field-label{color:var(--text2);font-size:12px;font-weight:500;flex-shrink:0}
+.field-val{text-align:right;flex:1;font-size:13px;word-break:break-word}
+.money{font-family:var(--font-serif);font-size:16px}
+.big-money{font-family:var(--font-serif);font-size:36px;font-weight:400}
+
+/* PROP GRID */
+.prop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+@media(max-width:380px){.prop-grid{grid-template-columns:repeat(2,1fr)}}
+.prop-box{background:var(--cream2);border:1px solid var(--border);border-radius:var(--radius);padding:10px;text-align:center}
+.prop-box-val{font-family:var(--font-serif);font-size:18px;margin-bottom:2px}
+.prop-box-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);font-weight:600}
+
+/* DEBT */
+.debt-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--cream2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;font-size:13px}
+.debt-label{font-weight:500}
+.debt-amount{font-family:var(--font-serif);font-size:15px;color:var(--danger)}
+
+/* ARV */
+.arv-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.arv-box{background:var(--cream2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px}
+.arv-box.hl{background:var(--navy);border-color:var(--gold)}
+.arv-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);font-weight:600;margin-bottom:4px}
+.arv-box.hl .arv-label{color:var(--gold3)}
+.arv-val{font-family:var(--font-serif);font-size:20px;font-weight:400}
+.arv-box.hl .arv-val{color:var(--gold2)}
+
+/* COMP CARD */
+.comp-card{background:var(--cream2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-bottom:10px}
+.comp-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:8px}
+.comp-addr{font-weight:600;font-size:13px}
+.comp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px}
+.comp-stat{background:var(--cream3);border-radius:var(--radius);padding:8px 10px}
+.comp-stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:3px;font-weight:600}
+.comp-stat-val{font-size:14px;font-weight:600}
+.comp-note{font-size:12px;color:var(--text2);font-style:italic;line-height:1.5;padding-top:8px;border-top:1px solid var(--border)}
+
+/* EXIT */
+.exit-btn{display:flex;align-items:center;gap:10px;background:var(--cream2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .15s;width:100%;font-family:var(--font)}
+.exit-btn:hover{border-color:var(--gold3)}.exit-btn.sel{background:var(--navy);border-color:var(--gold);color:var(--gold2)}
+.exit-check{width:18px;height:18px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;transition:background .15s}
+.exit-btn.sel .exit-check{background:var(--gold);border-color:var(--gold)}
+.exit-label{font-weight:600;font-size:13px;text-align:left}
+
+/* BREAKDOWN */
+.breakdown-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.breakdown-item:last-child{border-bottom:none}
+
+/* FOLLOW-UP */
+.fu-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--radius-lg);margin-bottom:8px;border:1px solid var(--border);background:var(--cream2)}
+.fu-item.overdue{background:var(--danger-bg);border-color:rgba(193,18,31,0.25)}.fu-item.soon{background:var(--warn-bg);border-color:rgba(157,107,26,0.25)}
+.notif{display:flex;gap:10px;padding:12px 14px;border-radius:var(--radius-lg);background:var(--cream2);margin-bottom:8px;cursor:pointer;border:1px solid var(--border)}
+.notif-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:flex-end;justify-content:center}
+@media(min-width:600px){.modal-overlay{align-items:center}}
+.modal-overlay.open{display:flex}
+.modal{background:var(--cream);border-radius:16px 16px 0 0;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;padding:20px 18px 32px}
+@media(min-width:600px){.modal{border-radius:16px}}
+.modal-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 18px}
+.modal h2{font-family:var(--font-serif);font-size:18px;font-weight:400;margin-bottom:16px}
+.form-row{margin-bottom:12px}
+.form-row label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:5px;font-weight:600}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:10px 12px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--cream2);font-size:14px;color:var(--text);font-family:var(--font)}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{outline:none;border-color:var(--gold3)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+
+/* MISC */
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:32px 20px;text-align:center;cursor:pointer;transition:background .15s}
+.upload-zone:hover{background:var(--cream3)}
+.code-block{background:var(--cream3);border-radius:var(--radius);padding:12px;font-size:11px;font-family:monospace;color:var(--text2);overflow-x:auto;white-space:nowrap;line-height:1.7;margin-top:8px}
+.install-tip{background:var(--warn-bg);border:1px solid rgba(157,107,26,0.2);border-radius:var(--radius-lg);padding:14px;margin-bottom:14px;font-size:13px;line-height:1.6}
+.install-tip strong{color:var(--warn)}
+.empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:14px}
+.sec-title-sm{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);font-weight:700;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- LIST SCREEN -->
+  <div class="screen active" id="screen-list">
+    <div class="topbar">
+      <div class="topbar-logo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <h1>HomeLead</h1>
+      <span id="hdr-badge" class="badge badge-danger" style="display:none" onclick="switchTab('followups')"></span>
+    </div>
+    <div class="tabs">
+      <div class="tab active" id="tab-leads" onclick="switchTab('leads')">Leads</div>
+      <div class="tab" id="tab-followups" onclick="switchTab('followups')">Follow-ups</div>
+      <div class="tab" id="tab-notifications" onclick="switchTab('notifications')">Alerts</div>
+      <div class="tab" id="tab-import" onclick="switchTab('import')">Import</div>
+      <div class="tab" id="tab-settings" onclick="switchTab('settings')">Settings</div>
+    </div>
+    <div class="list-content" id="list-content"></div>
+    <button class="fab" onclick="openAddModal()" title="Add lead">+</button>
+  </div>
+
+  <!-- DETAIL SCREEN -->
+  <div class="screen" id="screen-detail">
+    <div class="detail-header">
+      <div class="detail-header-top">
+        <button class="back-btn" onclick="goBack()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="detail-name" id="detail-name"></div>
+        <button class="btn btn-gold btn-sm" onclick="openEditModal()" style="flex-shrink:0">Edit</button>
+      </div>
+      <div id="detail-header-meta" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="modal-title">Add new lead</h2>
+    <div class="form-grid">
+      <div class="form-row"><label>First name</label><input id="f-first" placeholder="Jane"></div>
+      <div class="form-row"><label>Last name</label><input id="f-last" placeholder="Smith"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Phone</label><input id="f-phone" type="tel" placeholder="404-555-0100"></div>
+      <div class="form-row"><label>Email</label><input id="f-email" type="email" placeholder="jane@email.com"></div>
+    </div>
+    <div class="form-row"><label>Property address</label><input id="f-addr" placeholder="123 Maple St, Atlanta, GA 30301"></div>
+    <div class="form-grid">
+      <div class="form-row"><label>Asking price ($)</label><input id="f-val" type="number" placeholder="224900"></div>
+      <div class="form-row"><label>Source</label>
+        <select id="f-source"><option>Zillow</option><option>Referral</option><option>Cold call</option><option>Website</option><option>Sign call</option><option>Open house</option><option>Other</option></select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Status</label>
+        <select id="f-status"><option>Hot</option><option>Warm</option><option>Cold</option><option>Contacted</option></select>
+      </div>
+      <div class="form-row"><label>Last contacted</label><input id="f-contact" type="date"></div>
+    </div>
+    <div class="form-row"><label>Notes</label><textarea id="f-notes" rows="2" placeholder="Seller motivation, timeline…"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveLead()">Save lead</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const SK='homelead_v3',IK='homelead_iv';
+let leads=[],followupInterval=14,currentTab='leads',filterQ='',filterSt='',editingId=null,detailId=null;
+
+const TODAY=()=>{const d=new Date();d.setHours(0,0,0,0);return d;};
+function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function nextFollowup(l){if(!l.lastContact)return addDays(TODAY(),l.interval||followupInterval);return addDays(new Date(l.lastContact),l.interval||followupInterval);}
+function daysUntil(d){return Math.ceil((new Date(d)-TODAY())/(864e5));}
+function fmtDate(s){if(!s)return'—';return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function fmt$(v){if(!v&&v!==0)return'—';const n=parseFloat(v);if(isNaN(n))return String(v);return'$'+n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});}
+function initials(n){const p=n.trim().split(' ');return(p[0]?.[0]||'')+(p.length>1?p[p.length-1]?.[0]||'':'');}
+const AV=[['#E6F1FB','#185FA5'],['#E1F5EE','#0F6E56'],['#EEEDFE','#534AB7'],['#FAECE7','#993C1D'],['#FAEEDA','#854F0B'],['#EAF3DE','#3B6D11']];
+function av(n){const i=(n.charCodeAt(0)||0)%6;return`background:${AV[i][0]};color:${AV[i][1]}`;}
+function statusPill(s){const m={Hot:'p-hot',Warm:'p-warm',Cold:'p-cold',Contacted:'p-contacted'};return`<span class="pill ${m[s]||'p-gray'}">${s}</span>`;}
+function fuBadge(d){if(d<0)return`<span class="pill p-overdue">${Math.abs(d)}d overdue</span>`;if(d===0)return`<span class="pill p-soon">Due today</span>`;if(d<=3)return`<span class="pill p-soon">In ${d}d</span>`;return`<span class="pill p-gray">In ${d}d</span>`;}
+function nextId(){return Math.max(0,...leads.map(l=>l.id||0))+1;}
+function overdueCount(){return leads.filter(l=>daysUntil(nextFollowup(l))<0).length;}
+
+function save(){try{localStorage.setItem(SK,JSON.stringify(leads));localStorage.setItem(IK,followupInterval);}catch(e){}}
+function load(){
+  try{const d=localStorage.getItem(SK);if(d)leads=JSON.parse(d);const iv=localStorage.getItem(IK);if(iv)followupInterval=parseInt(iv)||14;}catch(e){}
+  if(!leads.length) leads=[
+    {id:1,name:'Sandra Mitchell',phone:'404-555-0191',email:'sandra.m@gmail.com',address:'812 Peachtree Ln, Atlanta, GA 30309',value:224900,source:'Zillow',status:'Hot',lastContact:'2025-02-03',notes:'Divorce situation, motivated seller.',interval:14,
+     prop:{beds:3,baths:2,sqft:1450,yearBuilt:1978,lot:'0.25 ac'},
+     whySelling:'Going through divorce. Needs to sell quickly and split equity.',
+     timeline:'Wants to close within 60 days.',
+     repairs:'Roof needs replacement (~$8k). Kitchen dated. Carpet in bedrooms needs replacement.',
+     debts:[{label:'Mortgage',amount:170552.61},{label:'Back taxes',amount:3200},{label:'Contractor lien',amount:1500}],
+     askingPrice:224900,
+     terms:{accepts:true,termYears:5,monthlyPayment:1307,notes:'Agreed to 5-year term at $1,307/month'},
+     arv:{zestimate:245000,propstream:238000,myArv:240000},
+     comps:[
+       {address:'801 Peachtree Ln, Atlanta GA 30309',link:'https://zillow.com',dateSold:'Jan 2025',priceSqft:158,soldPrice:229100,dealPrice:228000,note:'Nearly identical layout, same street. Ours has original kitchen vs updated.'},
+       {address:'555 Magnolia Way, Atlanta GA 30309',link:'https://zillow.com',dateSold:'Nov 2024',priceSqft:162,soldPrice:234900,dealPrice:234900,note:'This one has an extra half bath and new roof — adds roughly $10k premium.'},
+       {address:'220 Oak Ridge Dr, Atlanta GA 30309',link:'https://zillow.com',dateSold:'Dec 2024',priceSqft:155,soldPrice:224750,dealPrice:225000,note:'Similar sqft, slightly smaller lot. Supports our asking range.'}
+     ],
+     rental:{rentZestimate:1650,myRentEstimate:1700},
+     exitStrategy:'RTO',
+     dealBreakdown:{realtorCommission:13500,termYears:5,monthlyPayment:1307,taxes:538,insurance:950,notes:'Realtor wants $13,500 commission. 5-year term at $1,307/mo. Taxes $538/yr. Insurance under $1,000.'}
+    },
+    {id:2,name:'Bob Turner',phone:'678-555-0234',email:'bturner@outlook.com',address:'1540 Oak Grove Rd, Marietta, GA 30062',value:292000,source:'Referral',status:'Warm',lastContact:'2025-03-01',notes:'Relocating for work.',interval:14,prop:{beds:4,baths:3,sqft:2100,yearBuilt:2001,lot:'0.4 ac'},whySelling:'Job transfer to Nashville.',timeline:'Flexible, 90-120 days.',repairs:'Minor — touch up paint, one HVAC service.',debts:[{label:'Mortgage',amount:210000}],askingPrice:292000,terms:{accepts:false,notes:'Has not agreed to terms yet.'},arv:{zestimate:305000,propstream:298000,myArv:302000},comps:[],rental:{rentZestimate:2100,myRentEstimate:2000},exitStrategy:'',dealBreakdown:{realtorCommission:0,termYears:0,monthlyPayment:0,taxes:720,insurance:1100,notes:''}},
+    {id:3,name:'Angela Davis',phone:'770-555-0167',email:'adavis@email.com',address:'310 Magnolia Dr, Roswell, GA 30075',value:450000,source:'Cold call',status:'Cold',lastContact:'2025-01-15',notes:'Not ready yet.',interval:14,prop:{beds:5,baths:4,sqft:3200,yearBuilt:2008,lot:'0.6 ac'},whySelling:'Downsizing — kids moved out.',timeline:'No rush, 6+ months.',repairs:'Good condition. Pool pump needs service.',debts:[{label:'Mortgage',amount:290000}],askingPrice:450000,terms:{accepts:false,notes:''},arv:{zestimate:465000,propstream:458000,myArv:460000},comps:[],rental:{rentZestimate:3000,myRentEstimate:2900},exitStrategy:'',dealBreakdown:{realtorCommission:0,termYears:0,monthlyPayment:0,taxes:1200,insurance:1800,notes:''}},
+  ];
+}
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');}
+function goBack(){showScreen('list');renderList();}
+
+function switchTab(t){
+  currentTab=t;
+  ['leads','followups','notifications','import','settings'].forEach(v=>document.getElementById('tab-'+v)?.classList.toggle('active',v===t));
+  renderList();
+}
+
+function updateBadge(){const b=document.getElementById('hdr-badge'),c=overdueCount();if(!b)return;b.textContent=c?c+' overdue':'';b.style.display=c?'inline-block':'none';}
+
+function renderList(){
+  const c=document.getElementById('list-content');updateBadge();
+  if(currentTab==='leads')c.innerHTML=renderLeadsTab();
+  else if(currentTab==='followups')c.innerHTML=renderFollowupsTab();
+  else if(currentTab==='notifications')c.innerHTML=renderNotifsTab();
+  else if(currentTab==='import')c.innerHTML=renderImportTab();
+  else if(currentTab==='settings')c.innerHTML=renderSettingsTab();
+}
+
+function renderLeadsTab(){
+  let rows=leads.filter(l=>{
+    if(filterQ&&!l.name.toLowerCase().includes(filterQ.toLowerCase())&&!(l.address||'').toLowerCase().includes(filterQ.toLowerCase()))return false;
+    if(filterSt&&l.status!==filterSt)return false;return true;
+  });
+  const oc=overdueCount();
+  const alert=oc?`<div class="alert-banner"><span>⚠</span><div><strong>${oc} lead${oc>1?'s':''} overdue</strong></div><button class="btn btn-sm" style="margin-left:auto" onclick="switchTab('followups')">View</button></div>`:'';
+  const cards=rows.map(l=>{
+    const d=daysUntil(nextFollowup(l)),cls=d<0?'overdue':d<=3?'due-soon':'';
+    return`<div class="lead-card ${cls}" onclick="openDetail(${l.id})">
+      <div class="lc-top">
+        <div class="avatar" style="${av(l.name)}">${initials(l.name)}</div>
+        <div class="lc-info"><div class="lc-name">${l.name}</div><div class="lc-addr">${l.address||l.phone||''}</div></div>
+        ${statusPill(l.status)}
+      </div>
+      <div class="lc-mid">
+        <span class="pill p-gray">${l.source}</span>
+        ${l.askingPrice||l.value?`<span class="pill p-gray">${fmt$(l.askingPrice||l.value)}</span>`:''}
+        ${(l.prop||{}).beds?`<span class="pill p-gray">${l.prop.beds}bd/${l.prop.baths}ba</span>`:''}
+        ${fuBadge(d)}
+      </div>
+      <div class="lc-bot" onclick="event.stopPropagation()">
+        <button class="btn btn-gold btn-sm" onclick="openDetail(${l.id})">View deal</button>
+        <button class="btn btn-sm" onclick="quickContacted(${l.id})">✓ Called</button>
+      </div>
+    </div>`;
+  }).join('')||`<div class="empty">No leads found</div>`;
+  return`${alert}<div class="search-bar">
+    <input class="search-input" placeholder="Search…" value="${filterQ}" oninput="filterQ=this.value;renderList()">
+    <select class="filter-sel" onchange="filterSt=this.value;renderList()">
+      <option value="">All</option><option value="Hot"${filterSt==='Hot'?' selected':''}>Hot</option>
+      <option value="Warm"${filterSt==='Warm'?' selected':''}>Warm</option>
+      <option value="Cold"${filterSt==='Cold'?' selected':''}>Cold</option>
+      <option value="Contacted"${filterSt==='Contacted'?' selected':''}>Contacted</option>
+    </select></div>${cards}`;
+}
+
+function renderFollowupsTab(){
+  const items=leads.map(l=>({l,d:daysUntil(nextFollowup(l))})).sort((a,b)=>a.d-b.d);
+  const ov=items.filter(x=>x.d<0).length,td=items.filter(x=>x.d===0).length,wk=items.filter(x=>x.d>0&&x.d<=7).length;
+  return`<div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Overdue</div><div class="stat-val" style="color:var(--danger)">${ov}</div></div>
+    <div class="stat-card"><div class="stat-label">Due today</div><div class="stat-val" style="color:var(--warn)">${td}</div></div>
+    <div class="stat-card"><div class="stat-label">This week</div><div class="stat-val">${wk}</div></div>
+    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-val">${leads.length}</div></div>
+  </div><div class="sec-title-sm">Follow-up queue</div>`+
+  (items.map(({l,d})=>{const cls=d<0?'overdue':d<=3?'soon':'';return`<div class="fu-item ${cls}">
+    <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.name}</div><div style="font-size:11px;color:var(--text2)">${l.address||l.phone||''}</div></div>
+    ${fuBadge(d)}<div style="display:flex;gap:6px;flex-shrink:0">
+    <button class="btn btn-xs" onclick="openDetail(${l.id})">View</button>
+    <button class="btn btn-xs btn-gold" onclick="quickContacted(${l.id})">Called</button></div></div>`;}).join('')||`<div class="empty">All on schedule!</div>`);
+}
+
+function renderNotifsTab(){
+  const items=leads.map(l=>({l,d:daysUntil(nextFollowup(l))})).filter(x=>x.d<=2).sort((a,b)=>a.d-b.d);
+  return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="sec-title-sm" style="margin:0">Pending alerts</div><button class="btn btn-sm" onclick="requestPush()">Enable push</button></div>`+
+  (items.map(({l,d})=>`<div class="notif" onclick="openDetail(${l.id})">
+    <div class="notif-dot" style="background:${d<0?'var(--danger)':d===0?'var(--warn)':'var(--navy)'}"></div>
+    <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">${l.name}</div>
+    <div style="font-size:12px;color:var(--text2)">${d<0?Math.abs(d)+'d overdue':d===0?'Due today':'Due in '+d+'d'} — ${l.address||''}</div></div></div>`).join('')||`<div class="empty">No pending alerts</div>`);
+}
+
+function renderImportTab(){
+  return`<div class="install-tip"><strong>Exporting from Notion:</strong> Open your leads database → ··· → Export → CSV, then upload below.</div>
+  <div class="upload-zone" onclick="document.getElementById('csv-file').click()">
+    <div style="font-size:36px;margin-bottom:10px">📂</div>
+    <div style="font-weight:600;font-size:15px;margin-bottom:4px">Upload CSV</div>
+    <div style="font-size:12px;color:var(--text2)">Tap to choose your Notion export</div>
+    <input type="file" id="csv-file" accept=".csv,.txt" style="display:none" onchange="handleCSV(this)">
+  </div>
+  <div id="import-result" style="margin-top:12px"></div>
+  <div style="margin-top:18px"><div class="sec-title-sm">Expected columns</div><div class="code-block">Name, Phone, Email, Address, Est Value, Source, Status, Last Contact</div></div>`;
+}
+
+function renderSettingsTab(){
+  return`<div class="sec-title-sm">Follow-up schedule</div>
+  <div class="field-card" style="margin-bottom:16px"><div class="field-row"><span class="field-label">Default interval</span>
+    <select onchange="followupInterval=parseInt(this.value);save();renderList()" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--cream2);font-size:13px;color:var(--text)">
+      ${[7,10,14,21,30].map(n=>`<option value="${n}"${followupInterval==n?' selected':''}>${n} days</option>`).join('')}
+    </select></div></div>
+  <div class="sec-title-sm">Install as app</div>
+  <div class="field-card" style="margin-bottom:16px;font-size:13px;line-height:2">
+    <strong>iPhone (Safari):</strong> Share → Add to Home Screen<br>
+    <strong>Android (Chrome):</strong> ··· → Add to Home Screen<br>
+    <strong>Desktop:</strong> Click ⊕ in address bar → Install
+  </div>
+  <div class="sec-title-sm">Data</div>
+  <div class="field-card">
+    <div class="field-row"><span class="field-label">Total leads</span><span>${leads.length}</span></div>
+    <div class="field-row"><span class="field-label">Export</span><button class="btn btn-sm" onclick="exportCSV()">Export CSV</button></div>
+    <div class="field-row"><span class="field-label" style="color:var(--danger)">Clear all</span><button class="btn btn-sm btn-danger" onclick="clearData()">Delete all</button></div>
+  </div>`;
+}
+
+// ===== DETAIL =====
+function openDetail(id){
+  detailId=id;const l=leads.find(x=>x.id===id);if(!l)return;
+  document.getElementById('detail-name').textContent=l.name;
+  const d=daysUntil(nextFollowup(l));
+  document.getElementById('detail-header-meta').innerHTML=statusPill(l.status)+`<span class="pill p-gray">${l.source}</span>`+fuBadge(d);
+  document.getElementById('detail-body').innerHTML=buildDetail(l);
+  showScreen('detail');
+}
+
+function sec(num,title,body){return`<div class="deal-section"><div class="section-heading"><div class="section-num">${num}</div><div class="section-title">${title}</div></div>${body}</div>`;}
+
+function buildDetail(l){
+  const p=l.prop||{},d=l.debts||[],db=l.dealBreakdown||{},arv=l.arv||{},comps=l.comps||[],rental=l.rental||{},t=l.terms||{};
+
+  const propBoxes=`<div class="prop-grid">
+    <div class="prop-box"><div class="prop-box-val">${p.beds||'—'}</div><div class="prop-box-label">Beds</div></div>
+    <div class="prop-box"><div class="prop-box-val">${p.baths||'—'}</div><div class="prop-box-label">Baths</div></div>
+    <div class="prop-box"><div class="prop-box-val">${p.sqft?p.sqft.toLocaleString():'—'}</div><div class="prop-box-label">Sq ft</div></div>
+    <div class="prop-box"><div class="prop-box-val">${p.yearBuilt||'—'}</div><div class="prop-box-label">Built</div></div>
+    <div class="prop-box"><div class="prop-box-val">${p.lot||'—'}</div><div class="prop-box-label">Lot</div></div>
+    <div class="prop-box"><div class="prop-box-val">${p.sqft&&(l.askingPrice||l.value)?'$'+Math.round((l.askingPrice||l.value)/p.sqft):'—'}</div><div class="prop-box-label">$/sqft</div></div>
+  </div>
+  <div class="field-card">
+    <div class="field-row"><span class="field-label">Address</span><span class="field-val">${l.address||'—'}</span></div>
+    <div class="field-row"><span class="field-label">Phone</span><span class="field-val"><a href="tel:${l.phone||''}" style="color:var(--navy3);text-decoration:none">${l.phone||'—'}</a></span></div>
+    <div class="field-row"><span class="field-label">Email</span><span class="field-val" style="word-break:break-all"><a href="mailto:${l.email||''}" style="color:var(--navy3);text-decoration:none">${l.email||'—'}</a></span></div>
+    <div class="field-row"><span class="field-label">Last contacted</span><span class="field-val">${fmtDate(l.lastContact)}</span></div>
+  </div>`;
+
+  const debtItems=d.map(x=>`<div class="debt-item"><span class="debt-label">${x.label}</span><span class="debt-amount">${fmt$(x.amount)}</span></div>`).join('');
+  const totalDebt=d.reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
+  const debtSec=d.length?(debtItems+`<div class="debt-item" style="border-top:2px solid var(--border2);margin-top:4px;font-weight:700"><span>Total debts</span><span class="debt-amount">${fmt$(totalDebt)}</span></div>`):`<div class="field-card"><p style="font-size:13px;color:var(--text2)">No debts recorded.</p></div>`;
+
+  const mo=parseFloat(db.monthlyPayment)||0,yrs=parseFloat(db.termYears)||0,totalPay=mo*12*yrs;
+  const breakdownSec=`<div class="field-card">
+    <div class="breakdown-item"><span>Realtor commission</span><span class="money" style="color:var(--danger)">${fmt$(db.realtorCommission)}</span></div>
+    <div class="breakdown-item"><span>Term length</span><span>${db.termYears?db.termYears+' years':'—'}</span></div>
+    <div class="breakdown-item"><span>Monthly payment</span><span class="money">${db.monthlyPayment?fmt$(db.monthlyPayment)+'/mo':'—'}</span></div>
+    <div class="breakdown-item"><span>Total payments (${yrs}yr)</span><span class="money" style="color:var(--success)">${totalPay?fmt$(totalPay):'—'}</span></div>
+    <div class="breakdown-item"><span>Annual taxes</span><span>${fmt$(db.taxes)}</span></div>
+    <div class="breakdown-item"><span>Annual insurance</span><span>${fmt$(db.insurance)}</span></div>
+    ${db.notes?`<div style="padding:10px 0;font-size:12px;color:var(--text2);border-top:1px solid var(--border);line-height:1.6">${db.notes}</div>`:''}
+  </div>`;
+
+  const compsSec=comps.length?comps.map((c,i)=>`<div class="comp-card">
+    <div class="comp-header">
+      <div><div class="comp-addr">${c.address}</div>${c.link?`<a href="${c.link}" style="font-size:11px;color:var(--navy3);text-decoration:none" target="_blank">View listing ↗</a>`:''}</div>
+      <span class="pill p-gray">Comp ${i+1}</span>
+    </div>
+    <div class="comp-grid">
+      <div class="comp-stat"><div class="comp-stat-label">Date sold</div><div class="comp-stat-val">${c.dateSold||'—'}</div></div>
+      <div class="comp-stat"><div class="comp-stat-label">$/sqft</div><div class="comp-stat-val">${c.priceSqft?'$'+c.priceSqft:'—'}</div></div>
+      <div class="comp-stat"><div class="comp-stat-label">Sold for</div><div class="comp-stat-val">${fmt$(c.soldPrice)}</div></div>
+      <div class="comp-stat" style="background:var(--success-bg)"><div class="comp-stat-label">Your deal</div><div class="comp-stat-val" style="color:var(--success)">${fmt$(c.dealPrice)}</div></div>
+    </div>
+    ${c.note?`<div class="comp-note">${c.note}</div>`:''}
+  </div>`).join(''):`<div class="field-card"><p style="font-size:13px;color:var(--text2)">No comps added yet.</p></div>`;
+
+  const exits=['RTO','Wholesale','Fix & Flip','Buy & Hold','Subject To','Other'];
+  const exitSec=exits.map(e=>`<button class="exit-btn${l.exitStrategy===e?' sel':''}" onclick="setExit(${l.id},'${e}')">
+    <div class="exit-check"></div><div class="exit-label">${e}</div></button>`).join('');
+
+  const actions=`<div style="display:flex;gap:10px;padding:16px 0;flex-wrap:wrap">
+    <button class="btn btn-gold" onclick="markContacted()">✓ Mark called (reset timer)</button>
+    <button class="btn btn-xs" style="background:#EAF3DE;color:#3B6D11;border-color:rgba(59,109,17,0.3)" onclick="openScheduleModal()">📅 Schedule call</button>
+    <button class="btn btn-xs" onclick="snooze(3)">Snooze 3d</button>
+    <button class="btn btn-xs" onclick="snooze(7)">1 week</button>
+    <button class="btn btn-xs" onclick="snooze(14)">2 weeks</button>
+  </div>`;
+
+  return sec(1,'Property details & contact',propBoxes)+
+    sec(2,'Why are they selling',`<div class="field-card"><p style="font-size:13px;line-height:1.7;color:var(--text2)">${l.whySelling||'Not yet captured.'}</p></div>`)+
+    sec(3,'Timeline',`<div class="field-card"><p style="font-size:13px;line-height:1.7;color:var(--text2)">${l.timeline||'Not yet captured.'}</p></div>`)+
+    sec(4,'Repairs needed',`<div class="field-card"><p style="font-size:13px;line-height:1.7;color:var(--text2)">${l.repairs||'None noted.'}</p></div>`)+
+    sec(5,'Debts & liens',debtSec)+
+    sec(8,'Asking price',`<div class="field-card"><div style="text-align:center;padding:14px 0"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:6px;font-weight:700">Asking price</div><div class="big-money" style="color:var(--navy)">${fmt$(l.askingPrice)}</div></div></div>`)+
+    sec(10,'Terms',`<div class="field-card">
+      <div class="field-row"><span class="field-label">Accepts terms</span><span class="field-val" style="font-weight:600;color:${t.accepts?'var(--success)':'var(--danger)'}">${t.accepts?'Yes':'No / Not yet'}</span></div>
+      ${t.termYears?`<div class="field-row"><span class="field-label">Term length</span><span class="field-val">${t.termYears} years</span></div>`:''}
+      ${t.monthlyPayment?`<div class="field-row"><span class="field-label">Monthly payment</span><span class="field-val money">${fmt$(t.monthlyPayment)}/mo</span></div>`:''}
+      ${t.notes?`<div class="field-row"><span class="field-label">Notes</span><span class="field-val">${t.notes}</span></div>`:''}
+    </div>`)+
+    sec('▲','ARV & valuations',`<div class="arv-grid">
+      <div class="arv-box"><div class="arv-label">Zestimate</div><div class="arv-val">${fmt$(arv.zestimate)}</div></div>
+      <div class="arv-box"><div class="arv-label">Propstream</div><div class="arv-val">${fmt$(arv.propstream)}</div></div>
+      <div class="arv-box hl"><div class="arv-label">My ARV</div><div class="arv-val">${fmt$(arv.myArv)}</div></div>
+      <div class="arv-box"><div class="arv-label">Asking price</div><div class="arv-val">${fmt$(l.askingPrice)}</div></div>
+    </div>`)+
+    sec('C','Comps (3)',compsSec)+
+    sec('R','Rental comps',`<div class="field-card">
+      <div class="field-row"><span class="field-label">Rent Zestimate</span><span class="field-val money">${rental.rentZestimate?fmt$(rental.rentZestimate)+'/mo':'—'}</span></div>
+      <div class="field-row"><span class="field-label">My rent estimate</span><span class="field-val money">${rental.myRentEstimate?fmt$(rental.myRentEstimate)+'/mo':'—'}</span></div>
+    </div>`)+
+    sec('→','Exit strategy',exitSec)+
+    sec('$','Final deal breakdown',breakdownSec)+
+    sec('✏','Notes',`<div class="field-card"><p style="font-size:13px;line-height:1.7;color:var(--text2)">${l.notes||'No general notes.'}</p></div>`)+
+    actions;
+}
+
+function setExit(id,strategy){const l=leads.find(x=>x.id===id);if(!l)return;l.exitStrategy=l.exitStrategy===strategy?'':strategy;save();openDetail(id);}
+function markContacted(){const l=leads.find(x=>x.id===detailId);if(!l)return;l.lastContact=new Date().toISOString().split('T')[0];l.interval=followupInterval;save();openDetail(detailId);}
+function snooze(days){const l=leads.find(x=>x.id===detailId);if(!l)return;l.lastContact=new Date().toISOString().split('T')[0];l.interval=days;save();openDetail(detailId);}
+function quickContacted(id){const l=leads.find(x=>x.id===id);if(!l)return;l.lastContact=new Date().toISOString().split('T')[0];l.interval=followupInterval;save();renderList();}
+
+function openAddModal(){editingId=null;document.getElementById('modal-title').textContent='Add new lead';document.getElementById('f-contact').value=new Date().toISOString().split('T')[0];['f-first','f-last','f-phone','f-email','f-addr','f-val','f-notes'].forEach(id=>document.getElementById(id).value='');document.getElementById('f-status').value='Warm';document.getElementById('add-modal').classList.add('open');}
+function openEditModal(){const l=leads.find(x=>x.id===detailId);if(!l)return;editingId=detailId;document.getElementById('modal-title').textContent='Edit lead';const parts=l.name.split(' ');document.getElementById('f-first').value=parts[0]||'';document.getElementById('f-last').value=parts.slice(1).join(' ')||'';document.getElementById('f-phone').value=l.phone||'';document.getElementById('f-email').value=l.email||'';document.getElementById('f-addr').value=l.address||'';document.getElementById('f-val').value=l.askingPrice||l.value||'';document.getElementById('f-source').value=l.source||'Zillow';document.getElementById('f-status').value=l.status||'Warm';document.getElementById('f-contact').value=l.lastContact||'';document.getElementById('f-notes').value=l.notes||'';document.getElementById('add-modal').classList.add('open');}
+function closeAddModal(){document.getElementById('add-modal').classList.remove('open');}
+function saveLead(){
+  const first=document.getElementById('f-first').value.trim(),last=document.getElementById('f-last').value.trim();
+  if(!first&&!last){alert('Please enter a name.');return;}
+  const name=(first+' '+last).trim(),phone=document.getElementById('f-phone').value,email=document.getElementById('f-email').value,address=document.getElementById('f-addr').value,val=document.getElementById('f-val').value||'',source=document.getElementById('f-source').value,status=document.getElementById('f-status').value,lastContact=document.getElementById('f-contact').value,notes=document.getElementById('f-notes').value;
+  if(editingId){const l=leads.find(x=>x.id===editingId);if(l){Object.assign(l,{name,phone,email,address,value:val,askingPrice:val,source,status,lastContact,notes});}}
+  else{leads.push({id:nextId(),name,phone,email,address,value:val,askingPrice:val,source,status,lastContact,notes,interval:followupInterval,prop:{},debts:[],terms:{},arv:{},comps:[],rental:{},dealBreakdown:{}});}
+  save();closeAddModal();if(editingId)openDetail(editingId);else switchTab('leads');
+}
+
+function handleCSV(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.trim().split(/\r?\n/);if(lines.length<2){document.getElementById('import-result').innerHTML='<div style="color:var(--danger);font-size:13px">File empty or invalid.</div>';return;}
+    const hdr=lines[0].split(',').map(h=>h.replace(/"/g,'').trim().toLowerCase());
+    const cm={name:['name','full name'],phone:['phone','mobile','cell'],email:['email'],address:['address','property address'],value:['est value','value','price','asking price'],source:['source','lead source'],status:['status'],lastContact:['last contact','last contacted']};
+    const find=k=>{for(const a of cm[k]||[]){const i=hdr.indexOf(a);if(i>=0)return i;}return-1;};
+    let n=0;
+    for(let i=1;i<lines.length;i++){
+      const row=lines[i].split(',').map(v=>v.replace(/"/g,'').trim());
+      const get=k=>{const idx=find(k);return idx>=0?(row[idx]||''):''};
+      const name=get('name');if(!name)continue;
+      leads.push({id:nextId(),name,phone:get('phone'),email:get('email'),address:get('address'),value:get('value'),askingPrice:get('value'),source:get('source')||'Import',status:get('status')||'Warm',lastContact:get('lastContact')||new Date().toISOString().split('T')[0],notes:'',interval:followupInterval,prop:{},debts:[],terms:{},arv:{},comps:[],rental:{},dealBreakdown:{}});n++;
+    }
+    save();document.getElementById('import-result').innerHTML=`<div style="padding:12px;background:var(--success-bg);border-radius:var(--radius);font-size:13px;color:var(--success)">✓ Imported ${n} leads. <a href="#" onclick="switchTab('leads');return false" style="color:var(--success)">View leads →</a></div>`;input.value='';updateBadge();
+  };reader.readAsText(file);
+}
+
+function exportCSV(){
+  const rows=[['Name','Phone','Email','Address','Asking Price','Source','Status','Last Contact','Notes']];
+  leads.forEach(l=>rows.push([l.name,l.phone,l.email,l.address,l.askingPrice||l.value,l.source,l.status,l.lastContact,l.notes].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`)));
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(rows.map(r=>r.join(',')).join('\n'));a.download='homelead-export.csv';a.click();
+}
+function clearData(){if(!confirm('Delete ALL leads? Cannot be undone.'))return;leads=[];save();switchTab('leads');}
+function requestPush(){if(!('Notification'in window)){alert('Not supported here.');return;}Notification.requestPermission().then(p=>{if(p==='granted'){const ov=overdueCount();if(ov)new Notification('HomeLead',{body:`${ov} lead${ov>1?'s':''} overdue`});else alert('Notifications enabled!');}else alert('Permission denied.');});}
+
+try{const mf={name:'HomeLead CRM',short_name:'HomeLead',start_url:'./',display:'standalone',background_color:'#ffffff',theme_color:'#ffffff',icons:[{src:`data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%23111111'/><path d='M36 90L96 44l60 46v60a8 8 0 01-8 8H44a8 8 0 01-8-8V90z' fill='%23ffffff'/><rect x='72' y='118' width='48' height='50' rx='4' fill='%23111111'/></svg>`,sizes:'192x192',type:'image/svg+xml'}]};const bl=new Blob([JSON.stringify(mf)],{type:'application/manifest+json'});const lk=document.createElement('link');lk.rel='manifest';lk.href=URL.createObjectURL(bl);document.head.appendChild(lk);}catch(e){}
+
+
+load();renderList();
+</script>
+
+<!-- SCHEDULE CALL MODAL -->
+<div class="modal-overlay" id="schedule-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Schedule a call</h2>
+    <div class="form-row"><label>Date</label><input type="date" id="sched-date"></div>
+    <div class="form-grid">
+      <div class="form-row"><label>Start time</label><input type="time" id="sched-start" value="09:00"></div>
+      <div class="form-row"><label>Duration</label>
+        <select id="sched-dur">
+          <option value="15">15 min</option>
+          <option value="30" selected>30 min</option>
+          <option value="45">45 min</option>
+          <option value="60">1 hour</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row"><label>Title (editable)</label><input type="text" id="sched-title" placeholder="Call with Seller"></div>
+    <div style="background:var(--cream2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:12px;font-size:12px;color:var(--text2);line-height:1.7" id="sched-preview"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeScheduleModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="addToCalendar()">Add to Calendar</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+
+function openScheduleModal(){
+  const l=leads.find(x=>x.id===detailId);if(!l)return;
+  const today=new Date();
+  document.getElementById('sched-date').value=today.toISOString().split('T')[0];
+  document.getElementById('sched-title').value=`Call with ${l.name}`;
+  updateSchedPreview();
+  document.getElementById('schedule-modal').classList.add('open');
+  ['sched-date','sched-start','sched-dur','sched-title'].forEach(id=>document.getElementById(id).addEventListener('input',updateSchedPreview));
+}
+
+function updateSchedPreview(){
+  const l=leads.find(x=>x.id===detailId);if(!l)return;
+  const lines=[];
+  if(l.phone) lines.push(`📞 ${l.phone}`);
+  if(l.address) lines.push(`🏠 ${l.address}`);
+  if(l.notes) lines.push(`📝 ${l.notes}`);
+  document.getElementById('sched-preview').innerHTML=lines.join('<br>')||'<span style="color:var(--text3)">No additional details</span>';
+}
+
+function closeScheduleModal(){
+  document.getElementById('schedule-modal').classList.remove('open');
+  ['sched-date','sched-start','sched-dur','sched-title'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.replaceWith(el.cloneNode(true));
+  });
+}
+
+function addToCalendar(){
+  const l=leads.find(x=>x.id===detailId);if(!l)return;
+  const dateVal=document.getElementById('sched-date').value;
+  const startVal=document.getElementById('sched-start').value||'09:00';
+  const dur=parseInt(document.getElementById('sched-dur').value)||30;
+  const title=document.getElementById('sched-title').value||`Call with ${l.name}`;
+  if(!dateVal){alert('Please pick a date.');return;}
+
+  const [y,mo,d]=dateVal.split('-').map(Number);
+  const [h,min]=startVal.split(':').map(Number);
+  const start=new Date(y,mo-1,d,h,min);
+  const end=new Date(start.getTime()+dur*60000);
+
+  function pad(n){return String(n).padStart(2,'0');}
+  function icsDate(dt){
+    return `${dt.getFullYear()}${pad(dt.getMonth()+1)}${pad(dt.getDate())}T${pad(dt.getHours())}${pad(dt.getMinutes())}00`;
+  }
+
+  const descLines=[];
+  if(l.phone) descLines.push(`Phone: ${l.phone}`);
+  if(l.email) descLines.push(`Email: ${l.email}`);
+  if(l.address) descLines.push(`Property: ${l.address}`);
+  if(l.value||l.askingPrice) descLines.push(`Asking: $${Number(l.askingPrice||l.value).toLocaleString()}`);
+  if(l.notes) descLines.push(`Notes: ${l.notes}`);
+  const desc=descLines.join('\\n');
+  const location=l.address||'';
+
+  const uid=`homelead-${detailId}-${Date.now()}@homelead.app`;
+  const ics=[
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//HomeLead CRM//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTART:${icsDate(start)}`,
+    `DTEND:${icsDate(end)}`,
+    `SUMMARY:${title}`,
+    `DESCRIPTION:${desc}`,
+    `LOCATION:${location}`,
+    'STATUS:CONFIRMED',
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n');
+
+  const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`call-${(l.name||'lead').replace(/\s+/g,'-').toLowerCase()}.ics`;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+  closeScheduleModal();
+}
+
+document.getElementById('schedule-modal').addEventListener('click',e=>{if(e.target===document.getElementById('schedule-modal'))closeScheduleModal();});
+
+</script>
+</body>
+</html>
